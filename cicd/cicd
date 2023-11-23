@@ -1,0 +1,262 @@
+#!/usr/bin/env bash
+
+eval "$(jq -r '. | to_entries | .[] | .key + "=\"" + .value + "\""' < cicd/cicd.json)"
+REPO=$(basename -s .git `git config --get remote.origin.url`)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+LATEST_COMMIT=$(git rev-parse --short HEAD)
+# REGISTRY="loyaltolpi"
+##REGISTRY="10.11.1.4:5000"
+##REGISTRY="193.1.1.4:5000"
+REGISTRY="registry01.loyalto.id"
+REGISTRY01="registry01.loyalto.id"
+
+if [ ${BRANCH} = "dev" ] 
+then
+    HOST=${DEVHOST}
+    DOMAIN=${DEVDOMAIN}
+    PORT=${DEVPORT}
+elif [ ${BRANCH} = "staging" ]
+then
+    HOST=${STAHOST}
+    DOMAIN=${STADOMAIN}
+else
+    HOST=${PROHOST}
+    DOMAIN=${PRODOMAIN}
+    PORT=${PROPORT}
+fi
+
+
+if [ "${BRANCH}" = "production" ]
+then
+    LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+    TAG=${LATEST_TAG}
+elif [ "${BRANCH}" = "main" ]
+then
+    LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+    TAG=${LATEST_TAG}
+else
+    TAG=${LATEST_COMMIT}
+fi
+
+
+
+
+# if docker login registry01.loyalto.id
+is_logged_in_registry01() {
+  cat ~/.docker/config.json | jq -r --arg url "registry01.loyalto.id" '.auths | has($url)'
+}
+
+# builder
+builder_step(){
+
+
+# CHECK=$(docker manifest inspect ${REGISTRY01}/${IMAGE}:builder > /dev/null ; echo $?)
+# if [[ "$CHECK" != 0 ]];
+# then
+# echo "BUILDER NOT EXISTING"
+#   exit -1
+# else
+
+
+# if [[ "$(docker images -q registry01.loyalto.id/qoin-fe-webmerchant:builder 2> /dev/null)" == "" ]]; then
+
+    echo "=======================================";
+    echo "BUILDER";
+    echo "=======================================";
+    time docker build --build-arg BRANCH=${BRANCH} --build-arg PROJECT=${IMAGE} --build-arg PORT=${PORT} -t ${REGISTRY01}/${IMAGE}:builder -f builder.Dockerfile . | tee .${REGISTRY01}-${IMAGE}-builder_result.log
+    echo "BUILD ====>>> ${REGISTRY01}/${IMAGE}:builder ===>>>"
+
+   RESULT=$(cat .${REGISTRY01}-${IMAGE}-builder_result.log | tail -n 1)
+    if [[ "$RESULT" != *Successfully* ]];
+    then
+    echo "!!!!FAIL"
+      exit -1
+    fi
+
+if [[ "$(is_logged_in_registry01)" == "true" ]]; then
+  echo "docker login"
+    time docker push ${REGISTRY01}/${IMAGE}:builder
+fi
+
+
+
+# fi
+
+
+
+ 
+
+
+
+
+}
+
+
+# build
+build_step(){
+
+echo "=======================================";
+echo " ⛏️  BUILD ...........................";
+echo "=======================================";
+time docker build -t ${REGISTRY}/${IMAGE}:${TAG} -f ${BRANCH}.Dockerfile . | tee .${REGISTRY}-${IMAGE}-${TAG}_result.log
+# time docker build --build-arg REGISTRY01=${REGISTRY01} --build-arg BRANCH=${BRANCH} --build-arg PROJECT=${IMAGE} --build-arg PORT=${PORT} -t ${REGISTRY}/${IMAGE}:${TAG} -f main.Dockerfile . | tee .${REGISTRY}-${IMAGE}-${TAG}_result.log
+
+RESULT=$(cat .${REGISTRY}-${IMAGE}-${TAG}_result.log | tail -n 1)
+if [[ "$RESULT" != *Successfully* ]];
+then
+echo "!!!!FAIL"
+  exit -1
+else
+echo " ✔️  BUILD IS DONE ====>>> ${REGISTRY}/${IMAGE}:${TAG} ===>>>"
+fi
+
+}
+
+test_step(){
+
+echo "=======================================";
+echo " 🧪   TEST ............................";
+echo "=======================================";
+time docker build --build-arg REGISTRY01=${REGISTRY01} --build-arg BRANCH=${BRANCH} --build-arg PROJECT=${IMAGE} --build-arg PORT=${PORT} -t ${REGISTRY}/${IMAGE}:${TAG} -f test.Dockerfile . | tee .${REGISTRY}-${IMAGE}-${TAG}_result.log
+
+RESULT=$(cat .${REGISTRY}-${IMAGE}-${TAG}_result.log | tail -n 1)
+if [[ "$RESULT" != *Successfully* ]];
+then
+echo "!!!!FAIL"
+  exit -1
+else
+echo " ✔️   TEST IS DONE ====>>> ${REGISTRY}/${IMAGE}:${TAG} ===>>>"
+fi
+
+}
+
+# release
+release_step(){
+
+echo "=======================================";
+echo " 📦 RELEASE ..........................";
+echo "=======================================";
+docker push ${REGISTRY}/${IMAGE}:${TAG}
+CHECK=$(docker manifest inspect ${REGISTRY}/${IMAGE}:${TAG} > /dev/null ; echo $?)
+if [[ "$CHECK" != 0 ]];
+then
+echo "!!!!FAIL"
+  exit -1
+else
+echo " ✔️ RELEASE IS DONE ====>>> ${REGISTRY}/${IMAGE}:${TAG} ===>>>"
+fi
+}
+
+# deploy
+deploy_step(){
+echo "=======================================";
+echo " 🚀 DEPLOY.............................";
+echo "=======================================";
+
+ssh devops@${HOST} << EOF1
+mkdir -p ${BRANCH}-${REPO}
+cat <<"EOF2" > ${BRANCH}-${REPO}/docker-compose.yaml 
+version: "3"
+
+services:
+
+  ${BRANCH}-${REPO}:
+    container_name: "${BRANCH}-${REPO}"
+    image: ${REGISTRY}/${IMAGE}:${TAG}
+    restart: always
+    network_mode: bridge
+    environment:
+      - VIRTUAL_PORT=${PORT}
+      - VIRTUAL_HOST=${DOMAIN}
+      - LETSENCRYPT_HOST=${DOMAIN}
+      - LETSENCRYPT_EMAIL=mamat@loyalto.id
+EOF2
+cd ${BRANCH}-${REPO} && docker-compose pull && docker-compose up -d --force-recreate && docker-compose config
+EOF1
+
+
+
+}
+
+
+case "$1" in
+
+  run|r)
+    echo "DOCKER RUN"
+    docker run -d -p ${PORT}:${PORT} --name ${IMAGE} ${REGISTRY}/${IMAGE}:${TAG}
+    ;;
+
+  logs|l)
+    echo "DOCKER RUN"
+    docker logs ${IMAGE}
+    ;;
+
+  remove|rm)
+    echo "DOCKER RUN"
+    docker rm -f ${IMAGE}
+    ;;
+
+
+   builder|br)
+  # builder step 
+    builder_step
+    ;;
+
+   build|b)
+    if [ -f "builder.Dockerfile" ]; then
+        # echo "builder.Dockerfile exists."
+        docker pull ${REGISTRY01}/${IMAGE}:builder
+        if [[ "$(docker images -q ${REGISTRY01}/${IMAGE}:builder 2> /dev/null)" == "" ]]; then
+        builder_step
+        fi
+        build_step
+    else 
+        # echo "builder.Dockerfile does not exist."
+        build_step
+    fi
+    ;;
+
+
+
+   test|t)
+    if [ -f "test.Dockerfile" ]; then
+        # echo "builder.Dockerfile exists."
+        test_step
+    else 
+        echo " 🧪 TEST PASS";
+    fi
+    ;;
+
+
+
+  release|r)
+# release step
+    release_step
+
+    ;;
+
+
+
+  deploy|d)
+# deploy step
+    deploy_step
+    ;;
+
+
+
+
+   
+  *)
+echo "=======================================";
+echo "INFO CICD";
+echo "=======================================";
+echo "BUILDER     : ${REGISTRY01}/${IMAGE}:builder" 
+echo "BUILD_IMAGE : ${REGISTRY}/${IMAGE}:${TAG}" 
+echo "=======================================";
+echo "REPO       : $REPO"
+echo "IMAGE      : $IMAGE"
+echo "HOST       : $HOST"
+echo "DOMAIN     : $DOMAIN"
+echo "=======================================";
+    ;;
+esac

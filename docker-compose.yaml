@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: crypto-node
+    container_name: qoin-app
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+

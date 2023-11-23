@@ -1,0 +1,9 @@
+{
+"IMAGE": "qcoin-nodejs",
+"DEVDOMAIN": "dev-aegis-api.qoincrypto.id",
+"DEVHOST": "172.1.10.13",
+"DEVPORT": "8888",
+"PRODOMAIN": "aegis-api.qoincrypto.id",
+"PROHOST": "172.1.10.13",
+"PROPORT": "8000"
+}

@@ -1,7 +1,7 @@
 import pkgaxios from 'axios';
 const { get } = pkgaxios;
 import { Router } from 'express';
-var router = Router();
+var ethRouter = Router();
 import dotenv from 'dotenv';
 dotenv.config()
 import Web3 from 'web3';
@@ -15,7 +15,7 @@ const web3 = new Web3(process.env.QUICKNODE_ETHEREUM);
 import ethers from 'ethers';
 import bip39 from 'bip39';
 
-router.post('/createWallet', function (req, res) {
+ethRouter.post('/createWallet', function (req, res) {
 
   try {
     const mnemonic = req.body.passphrase
@@ -40,7 +40,7 @@ router.post('/createWallet', function (req, res) {
   }
 });
 
-router.post('/createPassphrase', function (req, res) {
+ethRouter.post('/createPassphrase', function (req, res) {
 
   try {
     const mnemonic = bip39.generateMnemonic();
@@ -64,7 +64,7 @@ router.post('/createPassphrase', function (req, res) {
   }
 });
 
-router.post('/importWallet', function (req, res) {
+ethRouter.post('/importWallet', function (req, res) {
 
   try {
 
@@ -97,7 +97,7 @@ router.post('/importWallet', function (req, res) {
   }
 });
 
-router.post('/getBalanceByAddress', async function (req, res, next) {
+ethRouter.post('/getBalanceByAddress', async function (req, res, next) {
   try {
     var address = req.body.address;
 
@@ -163,7 +163,7 @@ function blockConfirmationStatus(block) {
   }
 }
 
-router.post('/getTransactionByTxHash', async function (req, res, next) {
+ethRouter.post('/getTransactionByTxHash', async function (req, res, next) {
   try {
     var txnHash = req.body.txnHash;
 
@@ -223,7 +223,7 @@ function senderReceiver(addrOne, address) {
   }
 }
 
-router.post('/getTransactionByAddress', async function (req, res, next) {
+ethRouter.post('/getTransactionByAddress', async function (req, res, next) {
   try {
     var address = req.body.address;
     var limit = req.body.limit;
@@ -289,7 +289,7 @@ router.post('/getTransactionByAddress', async function (req, res, next) {
   }
 });
 
-router.post('/gasEstimate', async function (req, res, next) {
+ethRouter.post('/gasEstimate', async function (req, res, next) {
 
   try {
     const sender = req.body.sender;
@@ -534,7 +534,7 @@ router.post('/gasEstimate', async function (req, res, next) {
 
 });
 
-router.post('/sendTransaction', async function (req, res, next) {
+ethRouter.post('/sendTransaction', async function (req, res, next) {
   try {
     const sender = req.body.sender;
     const receiver = req.body.receiver;
@@ -623,19 +623,19 @@ router.post('/sendTransaction', async function (req, res, next) {
 
 });
 
-// router.post('/sendSerializedTransaction', async function (req, res, next) {
-//   try {
-//     const serializedTx = req.body.sender;
+ethRouter.post('/sendSerializedTransaction', async function (req, res, next) {
+  try {
+    const serializedTx = req.body.sender;
 
-//     const receipt = await web3.eth.sendSignedTransaction("0x" + serializedTx);
+    const receipt = await web3.eth.sendSignedTransaction("0x" + serializedTx);
 
-//     ok2(req.headers.authorization, "sendSerializedTransaction", 'SUCCESSFUL', ethereum("").symbol, ethereum().name, wallet, res);
+    ok2(req.headers.authorization, "sendSerializedTransaction", 'SUCCESSFUL', ethereum("").symbol, ethereum().name, wallet, res);
 
-//   } catch (e) {
-//     fail2(req.headers.authorization, "sendSerializedTransaction", 'UNSUCCESSFUL', ethereum().symbol, ethereum().name, e.message, res);
+  } catch (e) {
+    fail2(req.headers.authorization, "sendSerializedTransaction", 'UNSUCCESSFUL', ethereum().symbol, ethereum().name, e.message, res);
 
-//   }
+  }
 
-// });
+});
 
-export default router;
+export default ethRouter;

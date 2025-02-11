@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www",
+    "lint": "eslint . --fix",
+    "test": "jest"
   },
   "dependencies": {
     "@binance-chain/javascript-sdk": "^4.2.0",
@@ -17,6 +20,7 @@
     "bitcore-explorers": "^1.0.1",
     "bitcore-lib": "^8.25.28",
     "bs58": "^5.0.0",
+    "compression": "^1.8.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.0.1",
@@ -24,7 +28,7 @@
     "ed25519-hd-key": "^1.2.0",
     "ethereum-input-data-decoder": "^0.4.1",
     "express": "~4.16.1",
-    "fs": "^0.0.1-security",
+    "helmet": "^8.0.0",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.5.1",
@@ -33,10 +37,13 @@
     "morgan": "~1.9.1",
     "node-binance-sdk": "^1.0.5",
     "satoshi-bitcoin": "^1.0.5",
-    "to-uint8array": "^0.1.1",
+    "tiny-secp256k1": "^2.2.3",
     "web3": "^1.7.3"
   },
   "devDependencies": {
-    "@types/bitcore-lib": "^0.15.3"
+    "@types/bitcore-lib": "^0.15.3",
+    "eslint": "^8.0.1",
+    "jest": "^29.0.0",
+    "nodemon": "^2.0.15"
   }
 }

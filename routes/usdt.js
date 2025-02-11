@@ -1,7 +1,7 @@
 import pkgaxios from 'axios';
 const { get } = pkgaxios;
 import { Router } from 'express';
-var router = Router();
+var usdtRouter = Router();
 import dotenv from 'dotenv';
 dotenv.config()
 import Web3 from 'web3';
@@ -16,11 +16,9 @@ import ethers from 'ethers';
 import abi from '../abiUsdt.json' assert { type: 'json' };
 import InputDataDecoder from 'ethereum-input-data-decoder';
 const usdtContract = process.env.USDT_CONTRACT;
-// import mongoose from 'mongoose';
-// import Model from '../config/model.js';
 import bip39 from 'bip39';
 
-router.post('/createWallet', function (req, res) {
+usdtRouter.post('/createWallet', function (req, res) {
 
   try {
 
@@ -45,7 +43,7 @@ router.post('/createWallet', function (req, res) {
   }
 });
 
-router.post('/importWallet', function (req, res) {
+usdtRouter.post('/importWallet', function (req, res) {
 
   try {
     const pass = req.body.passphrase;
@@ -74,7 +72,7 @@ router.post('/importWallet', function (req, res) {
   }
 });
 
-router.post('/getBalanceByAddress', async function (req, res, next) {
+usdtRouter.post('/getBalanceByAddress', async function (req, res, next) {
   try {
     const address = req.body.address;
 
@@ -140,7 +138,7 @@ function blockConfirmationStatus(block) {
   }
 }
 
-router.post('/getTransactionByTxHash', async function (req, res, next) {
+usdtRouter.post('/getTransactionByTxHash', async function (req, res, next) {
   try {
     var txnHash = req.body.txnHash;
 
@@ -208,7 +206,7 @@ router.post('/getTransactionByTxHash', async function (req, res, next) {
   }
 });
 
-router.post('/gasEstimate', async function (req, res, next) {
+usdtRouter.post('/gasEstimate', async function (req, res, next) {
 
   try {
     const sender = req.body.sender;
@@ -366,7 +364,7 @@ function senderReceiver(addrOne, address) {
   }
 }
 
-router.post('/getTransactionByAddress', async function (req, res, next) {
+usdtRouter.post('/getTransactionByAddress', async function (req, res, next) {
   try {
     var address = req.body.address;
     var limit = req.body.limit;
@@ -434,7 +432,7 @@ router.post('/getTransactionByAddress', async function (req, res, next) {
   }
 });
 
-router.post('/sendTransaction', async function (req, res, next) {
+usdtRouter.post('/sendTransaction', async function (req, res, next) {
   try {
     const sender = req.body.sender;
     const receiver = req.body.receiver;
@@ -557,7 +555,7 @@ router.post('/sendTransaction', async function (req, res, next) {
   }
 });
 
-router.post('/sendSerializedTransaction', async function (req, res, next) {
+usdtRouter.post('/sendSerializedTransaction', async function (req, res, next) {
   try {
     const serializedTx = req.body.sender;
 
@@ -592,4 +590,4 @@ router.post('/sendSerializedTransaction', async function (req, res, next) {
 
 });
 
-export default router;
+export default usdtRouter;

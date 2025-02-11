@@ -2,7 +2,7 @@
 import pkgaxios from 'axios';
 const { get, post } = pkgaxios;
 import { Router } from 'express';
-var router = Router();
+var btcRouter = Router();
 import dotenv from 'dotenv';
 dotenv.config()
 import { ok2, fail2 } from '../config/resformat.js';
@@ -13,16 +13,13 @@ import bitcoinjs from 'bitcoinjs-lib';
 import * as ecc from 'tiny-secp256k1';
 import { ECPairFactory } from 'ecpair';
 import sb from 'satoshi-bitcoin';
-// import mongoose from 'mongoose';
-// import Model from '../config/model.js';
 import bip39 from 'bip39';
 import { BIP32Factory } from 'bip32';
-// import { Logger } from 'mongodb';
 
 const ECPair = ECPairFactory(ecc);
 const bip32 = BIP32Factory(ecc);
 
-router.post('/createSegwitWallet', function (req, res) {
+btcRouter.post('/createSegwitWallet', function (req, res) {
 
     try {
         const mnemonic = req.body.passphrase;
@@ -73,7 +70,7 @@ router.post('/createSegwitWallet', function (req, res) {
     }
 });
 
-router.post('/createWallet', function (req, res) {
+btcRouter.post('/createWallet', function (req, res) {
 
     try {
         const mnemonic = req.body.passphrase;
@@ -125,7 +122,7 @@ router.post('/createWallet', function (req, res) {
     }
 });
 
-router.post('/importSegwitWallet', function (req, res) {
+btcRouter.post('/importSegwitWallet', function (req, res) {
 
     try {
         var pass = req.body.passphrase;
@@ -180,7 +177,7 @@ router.post('/importSegwitWallet', function (req, res) {
     }
 });
 
-router.post('/importWallet', function (req, res) {
+btcRouter.post('/importWallet', function (req, res) {
 
     try {
         var pass = req.body.passphrase;
@@ -235,7 +232,7 @@ router.post('/importWallet', function (req, res) {
     }
 });
 
-router.post('/getBalanceByAddress', async function (req, res) {
+btcRouter.post('/getBalanceByAddress', async function (req, res) {
     try {
 
         const address = req.body.address;
@@ -340,7 +337,7 @@ function blockConfirmationStatus(block) {
 // }
 
 
-router.post('/getTransactionByAddress', async function (req, res) {
+btcRouter.post('/getTransactionByAddress', async function (req, res) {
 
     try {
         const address = req.body.address;
@@ -483,7 +480,7 @@ router.post('/getTransactionByAddress', async function (req, res) {
     }
 });
 
-router.post('/getTransactionByTxHash', async function (req, res) {
+btcRouter.post('/getTransactionByTxHash', async function (req, res) {
 
     try {
         const txHash = req.body.txHash;
@@ -575,7 +572,7 @@ router.post('/getTransactionByTxHash', async function (req, res) {
     }
 });
 
-router.post('/gasEstimate', async function (req, res) {
+btcRouter.post('/gasEstimate', async function (req, res) {
 
     try {
         // const privateKey = req.body.privKey;
@@ -750,7 +747,7 @@ async function getConfimationTransaction(sender) {
     }
 }
 
-router.post('/sendTransaction', async function (req, res) {
+btcRouter.post('/sendTransaction', async function (req, res) {
 
     try {
         const privateKey = req.body.privKey;
@@ -938,30 +935,30 @@ router.post('/sendTransaction', async function (req, res) {
     }
 });
 
-// router.post('/sendRawTransaction', async function (req, res, next) {
-//     try {
-//         const serializedTx = req.body.serializedTx;
+btcRouter.post('/sendRawTransaction', async function (req, res, next) {
+    try {
+        const serializedTx = req.body.serializedTx;
 
-//         const signedTx = { "jsonrpc": "1.0", "id": "curltest", "method": "sendrawtransaction", "params": [serializedTx] };
-//         const send = await post(process.env.BLOCKDAEMON, signedTx, {
-//             headers: {
-//                 "authorization": "Bearer " + process.env.BLOCKDAEMON_KEY
-//             }
-//         });
+        const signedTx = { "jsonrpc": "1.0", "id": "curltest", "method": "sendrawtransaction", "params": [serializedTx] };
+        const send = await post(process.env.BLOCKDAEMON, signedTx, {
+            headers: {
+                "authorization": "Bearer " + process.env.BLOCKDAEMON_KEY
+            }
+        });
 
-//         // res.json(send.data.result)
+        // res.json(send.data.result)
 
-//         var wallet = [
-//             {
-//                 hash: send.data
-//             }
-//         ];
+        var wallet = [
+            {
+                hash: send.data
+            }
+        ];
 
-//         ok2(req.headers.authorization, "sendRawTransaction", 'SUCCESSFUL', bitcoin().symbol, bitcoin().name, wallet, res);
-//     } catch (e) {
-//         fail2(req.headers.authorization, "sendRawTransaction", 'UNSUCCESSFUL', bitcoin().symbol, bitcoin().name, "Server Error", res);
-//     }
+        ok2(req.headers.authorization, "sendRawTransaction", 'SUCCESSFUL', bitcoin().symbol, bitcoin().name, wallet, res);
+    } catch (e) {
+        fail2(req.headers.authorization, "sendRawTransaction", 'UNSUCCESSFUL', bitcoin().symbol, bitcoin().name, "Server Error", res);
+    }
 
-// });
+});
 
-export default router;
+export default btcRouter;

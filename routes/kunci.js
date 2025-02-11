@@ -1,7 +1,7 @@
 import pkgaxios from 'axios';
 const { get } = pkgaxios;
 import { Router } from 'express';
-var router = Router();
+var kunciRouter = Router();
 import dotenv from 'dotenv';
 dotenv.config()
 import Web3 from 'web3';
@@ -15,13 +15,10 @@ var web3bsc = new Web3(process.env.QUICKNODE_BSC);
 import abi from '../abi.json' assert { type: 'json' };
 import InputDataDecoder from 'ethereum-input-data-decoder';
 const kunciContract = process.env.KUNCI_CONTRACT;
-// import mongoose from 'mongoose';
-// import Model from '../config/model.js';
 import bip39 from 'bip39';
 import ethers from 'ethers';
-// import { Logger } from 'mongodb';
 
-router.post('/createWallet', function (req, res) {
+kunciRouter.post('/createWallet', function (req, res) {
 
   try {
 
@@ -46,7 +43,7 @@ router.post('/createWallet', function (req, res) {
   }
 });
 
-router.post('/importWallet', async function (req, res) {
+kunciRouter.post('/importWallet', async function (req, res) {
 
   try {
     const pass = req.body.passphrase;
@@ -74,7 +71,7 @@ router.post('/importWallet', async function (req, res) {
   }
 });
 
-router.post('/getBalanceByAddress', async function (req, res, next) {
+kunciRouter.post('/getBalanceByAddress', async function (req, res, next) {
   try {
     const address = req.body.address;
 
@@ -150,7 +147,7 @@ function blockConfirmationStatus(block) {
   }
 }
 
-router.post('/getTransactionByTxHash', async function (req, res, next) {
+kunciRouter.post('/getTransactionByTxHash', async function (req, res, next) {
   try {
     var txnHash = req.body.txnHash;
 
@@ -233,7 +230,7 @@ function toFixed(x) {
 }
 
 
-router.post('/gasEstimate', async function (req, res, next) {
+kunciRouter.post('/gasEstimate', async function (req, res, next) {
 
   try {
     const sender = req.body.sender;
@@ -394,7 +391,7 @@ function senderReceiver(addrOne, address) {
   }
 }
 
-router.post('/getTransactionByAddress', async function (req, res, next) {
+kunciRouter.post('/getTransactionByAddress', async function (req, res, next) {
   try {
     var address = req.body.address;
     var limit = req.body.limit;
@@ -483,7 +480,7 @@ async function validateBalance(address, amount) {
   }
 }
 
-router.post('/sendTransaction', async function (req, res, next) {
+kunciRouter.post('/sendTransaction', async function (req, res, next) {
   try {
     const sender = req.body.sender;
     const receiver = req.body.receiver;
@@ -624,7 +621,7 @@ router.post('/sendTransaction', async function (req, res, next) {
 
 });
 
-router.post('/sendSerializedTransaction', async function (req, res, next) {
+kunciRouter.post('/sendSerializedTransaction', async function (req, res, next) {
   try {
     const serializedTx = req.body.sender;
 
@@ -660,4 +657,4 @@ router.post('/sendSerializedTransaction', async function (req, res, next) {
 
 });
 
-export default router;
+export default kunciRouter;

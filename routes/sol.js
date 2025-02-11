@@ -1,11 +1,11 @@
 import * as Web3 from '@solana/web3.js';
 import pkgaxios from 'axios';
-const { get, post } = pkgaxios;
+const { post } = pkgaxios;
 import * as bip39 from "bip39";
 import base58 from 'bs58';
 import dotenv from 'dotenv';
 import { Router } from 'express';
-var router = Router();
+var solRouter = Router();
 import { ok2, fail2 } from '../config/resformat.js';
 import { solana } from '../config/wallet_info.js';
 import ed25519HdKey from 'ed25519-hd-key';
@@ -16,7 +16,7 @@ const web3sol = new Web3.Connection(
     'confirmed'
 );
 
-router.post('/createWallet', async function (req, res) {
+solRouter.post('/createWallet', async function (req, res) {
 
     try {
         const mnemonic = req.body.passphrase;
@@ -48,7 +48,7 @@ router.post('/createWallet', async function (req, res) {
     }
 });
 
-router.post('/createPassphrase', async function (req, res) {
+solRouter.post('/createPassphrase', async function (req, res) {
 
     try {
         const mnemonic = bip39.generateMnemonic();
@@ -80,7 +80,7 @@ router.post('/createPassphrase', async function (req, res) {
     }
 });
 
-router.post('/importWallet', async function (req, res) {
+solRouter.post('/importWallet', async function (req, res) {
 
     try {
         const pass = req.body.passphrase;
@@ -117,7 +117,7 @@ router.post('/importWallet', async function (req, res) {
 });
 
 
-router.post('/getBalanceByAddress', async function (req, res, next) {
+solRouter.post('/getBalanceByAddress', async function (req, res, next) {
     try {
         const address = req.body.address;
 
@@ -178,7 +178,7 @@ function senderReceiver(addrOne, address) {
     }
 }
 
-router.post('/getTransactionByTxHash', async function (req, res, next) {
+solRouter.post('/getTransactionByTxHash', async function (req, res, next) {
 
     try {
         const sig = req.body.signature;
@@ -278,7 +278,7 @@ router.post('/getTransactionByTxHash', async function (req, res, next) {
     }
 });
 
-router.post('/getTransactionByAddress', async function (req, res, next) {
+solRouter.post('/getTransactionByAddress', async function (req, res, next) {
 
     try {
         const address = req.body.address;
@@ -593,7 +593,7 @@ router.post('/getTransactionByAddress', async function (req, res, next) {
 
 });
 
-router.get('/gasEstimate', async function (req, res, next) {
+solRouter.get('/gasEstimate', async function (req, res, next) {
 
     try {
         const json_sol = { "jsonrpc": "2.0", "id": 1, "method": "getFees" };
@@ -630,7 +630,7 @@ function zeroCount(num) {
     return zeros;
 }
 
-router.post('/sendTransaction', async function (req, res, next) {
+solRouter.post('/sendTransaction', async function (req, res, next) {
 
     try {
         const from = req.body.sender;
@@ -718,4 +718,4 @@ router.post('/sendTransaction', async function (req, res, next) {
     }
 });
 
-export default router;
+export default solRouter;

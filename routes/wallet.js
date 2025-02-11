@@ -1,5 +1,5 @@
 import { Router } from 'express';
-var router = Router();
+var walletRouter = Router();
 import dotenv from 'dotenv';
 dotenv.config();
 import { ok, fail } from '../config/resformat.js';
@@ -10,11 +10,11 @@ import * as Web3 from '@solana/web3.js';
 import bitcore from 'bitcore-lib';
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
+walletRouter.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.post('/registerToken', function (req, res) {
+walletRouter.post('/registerToken', function (req, res) {
   try {
     var email = req.body.email;
     var name = req.body.name;
@@ -40,7 +40,7 @@ router.post('/registerToken', function (req, res) {
   }
 });
 
-router.get('/createWallet', function (req, res) {
+walletRouter.get('/createWallet', function (req, res) {
   try {
 
     const mnemonic = bip39.generateMnemonic();
@@ -92,4 +92,4 @@ router.get('/createWallet', function (req, res) {
   }
 });
 
-export default router;
+export default walletRouter;

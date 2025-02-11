@@ -1,7 +1,7 @@
 import pkgaxios from 'axios';
 const { get } = pkgaxios;
 import { Router } from 'express';
-var router = Router();
+var bscRouter = Router();
 import dotenv from 'dotenv';
 dotenv.config()
 import Web3 from 'web3';
@@ -11,14 +11,12 @@ import pkgbitcore from '@ethereumjs/tx';
 const { Transaction } = pkgbitcore;
 import _Common from '@ethereumjs/common'
 const Common = _Common.default
-var web3bsc = new Web3(process.env.QUICKNODE_BSC);
 import ethers from 'ethers';
 import abi from '../abi.json' assert { type: 'json' };
-//const InputDataDecoder = require('ethereum-input-data-decoder');
 import InputDataDecoder from 'ethereum-input-data-decoder';
 import bip39 from 'bip39';
 
-router.post('/createWallet', function (req, res) {
+bscRouter.post('/createWallet', function (req, res) {
 
   try {
     const mnemonic = req.body.passphrase;
@@ -42,7 +40,7 @@ router.post('/createWallet', function (req, res) {
   }
 });
 
-router.post('/createPassphrase', function (req, res) {
+bscRouter.post('/createPassphrase', function (req, res) {
 
   try {
 
@@ -67,7 +65,7 @@ router.post('/createPassphrase', function (req, res) {
   }
 });
 
-router.post('/importWallet', function (req, res) {
+bscRouter.post('/importWallet', function (req, res) {
 
   try {
     const pass = req.body.passphrase;
@@ -95,8 +93,7 @@ router.post('/importWallet', function (req, res) {
   }
 });
 
-
-router.post('/getBalanceByAddress', async function (req, res, next) {
+bscRouter.post('/getBalanceByAddress', async function (req, res, next) {
   try {
     var address = req.body.address;
 
@@ -131,37 +128,7 @@ router.post('/getBalanceByAddress', async function (req, res, next) {
   }
 });
 
-function timeConverter(UNIX_timestamp) {
-  var a = new Date(UNIX_timestamp * 1000);
-  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  var year = a.getFullYear();
-  var month = a.getMonth() + 1;
-  var date = a.getDate();
-  var hour = a.getHours();
-  var min = a.getMinutes();
-  var sec = a.getSeconds();
-  var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec;
-  return time;
-}
-
-function hex_to_ascii(str1) {
-  var hex = str1.toString();
-  var str = '';
-  for (var n = 0; n < hex.length; n += 2) {
-    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-  }
-  return str;
-}
-
-function blockConfirmationStatus(block) {
-  if (block == 0) {
-    return "pending"
-  } else if (block >= 5) {
-    return "confirmed"
-  }
-}
-
-router.post('/getTransactionByTxHash', async function (req, res, next) {
+bscRouter.post('/getTransactionByTxHash', async function (req, res, next) {
   try {
     var txnHash = req.body.txnHash;
 
@@ -208,20 +175,7 @@ router.post('/getTransactionByTxHash', async function (req, res, next) {
   }
 });
 
-function senderReceiver(addrOne, address) {
-
-  var type;
-
-  if (addrOne === address.toLowerCase()) {
-    type = "Send";
-    return type;
-  } else {
-    type = "Receive";
-    return type;
-  }
-}
-
-router.post('/getTransactionByAddress', async function (req, res, next) {
+bscRouter.post('/getTransactionByAddress', async function (req, res, next) {
   try {
     var address = req.body.address;
     var limit = req.body.limit;
@@ -291,8 +245,7 @@ router.post('/getTransactionByAddress', async function (req, res, next) {
   }
 });
 
-
-router.post('/getAllTransactionTokenByAddress', async function (req, res, next) {
+bscRouter.post('/getAllTransactionTokenByAddress', async function (req, res, next) {
   try {
     var address = req.body.address;
 
@@ -405,8 +358,7 @@ router.post('/getAllTransactionTokenByAddress', async function (req, res, next) 
   }
 });
 
-
-router.post('/gasEstimate', async function (req, res, next) {
+bscRouter.post('/gasEstimate', async function (req, res, next) {
 
   try {
     const sender = req.body.sender;
@@ -653,7 +605,7 @@ router.post('/gasEstimate', async function (req, res, next) {
 
 });
 
-router.post('/sendTransaction', async function (req, res, next) {
+bscRouter.post('/sendTransaction', async function (req, res, next) {
   try {
     const sender = req.body.sender;
     const receiver = req.body.receiver;
@@ -739,7 +691,7 @@ router.post('/sendTransaction', async function (req, res, next) {
 
 });
 
-router.post('/sendSerializedTransaction', async function (req, res, next) {
+bscRouter.post('/sendSerializedTransaction', async function (req, res, next) {
   try {
     const serializedTx = req.body.sender;
 
@@ -754,4 +706,47 @@ router.post('/sendSerializedTransaction', async function (req, res, next) {
 
 });
 
-export default router;
+function senderReceiver(addrOne, address) {
+
+  var type;
+
+  if (addrOne === address.toLowerCase()) {
+    type = "Send";
+    return type;
+  } else {
+    type = "Receive";
+    return type;
+  }
+}
+
+function timeConverter(UNIX_timestamp) {
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var year = a.getFullYear();
+  var month = a.getMonth() + 1;
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec;
+  return time;
+}
+
+function hex_to_ascii(str1) {
+  var hex = str1.toString();
+  var str = '';
+  for (var n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+  }
+  return str;
+}
+
+function blockConfirmationStatus(block) {
+  if (block == 0) {
+    return "pending"
+  } else if (block >= 5) {
+    return "confirmed"
+  }
+}
+
+export default bscRouter;

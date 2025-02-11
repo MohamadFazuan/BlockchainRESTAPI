@@ -19,7 +19,7 @@
 # EXPOSE 8888
 # CMD [ "node", "server.js" ]
 
-FROM node:16
+FROM node:18
 RUN npm install pm2 -g
 ENV PM2_PUBLIC_KEY i7c7nmflgx9de8q
 ENV PM2_SECRET_KEY 1sw088z8chmzyf8
